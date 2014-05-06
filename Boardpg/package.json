@@ -1,0 +1,11 @@
+{
+  "name": "boardpg",
+  "description": "bluhbluhbluh",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "socket.io": "0.9.x",
+    "redis": "0.10.x",
+    "mysql2": "0.11.x"
+  }
+}
