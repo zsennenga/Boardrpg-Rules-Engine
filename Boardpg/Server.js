@@ -8,6 +8,8 @@ var config = require('./config')
   , packetHandler = require('./IO/PacketHandler')(game)
   , io = require('socket.io');
 
-io.sockets.on('connection', function (socket) {});
+io.sockets.on('connection', function (socket) {
+	
+});
 
 console.log("Ready");
