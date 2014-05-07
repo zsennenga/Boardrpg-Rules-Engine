@@ -11,24 +11,24 @@ Game.prototype.getLock(gameId, cb)
 	this.gameState.getLock(gameId, cb);
 }
 
-Game.prototype.releaseLock(gameId, cb)
+Game.prototype.releaseLock(gameId, conn, cb)
 {
-	this.gameState.releaseLock(gameId, cb);
+	this.gameState.releaseLock(gameId, conn, cb);
 }
 
-Game.prototype.joinGame = function(gameId, playerId) {
+Game.prototype.joinGame = function(gameId, playerId, conn) {
 	this.async.parallel({
 		exists : function(callback) {
-			this.gameState.gameExists(gameId, callback);
+			this.gameState.gameExists(gameId, conn, callback);
 		},
 		active : function(callback) {
-			this.gameState.isGameActive(gameId, callback);
+			this.gameState.isGameActive(gameId, conn, callback);
 		},
 		hasPlayer : function(callback) {
-			this.gameState.hasPlayer(gameId, playerId, callback);
+			this.gameState.hasPlayer(gameId, playerId, conn, callback);
 		},
 		isFull : function(callback) {
-			this.gameState.isFull(gameId, callback);
+			this.gameState.isFull(gameId, conn, callback);
 		}
 	}, function(err, res) {
 		if (err)
