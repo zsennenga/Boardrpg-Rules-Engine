@@ -1,7 +1,7 @@
 'use strict';
 function Game(gS, gI) {
 	var gameState = gS;
-	var gameInfo = gI;
+	var gameData = gI;
 	var state = require('./State');
 	var async = require('async');
 }
@@ -19,16 +19,16 @@ Game.prototype.releaseLock(gameId, cb)
 Game.prototype.joinGame = function(gameId, playerId) {
 	this.async.parallel({
 		exists : function(callback) {
-			this.gameInfo.gameExists(gameId);
+			this.gameState.gameExists(gameId, callback);
 		},
 		active : function(callback) {
-			this.gameInfo.isGameActive(gameId, callback);
+			this.gameState.isGameActive(gameId, callback);
 		},
 		hasPlayer : function(callback) {
-			this.gameInfo.hasPlayer(gameId, playerId, callback);
+			this.gameState.hasPlayer(gameId, playerId, callback);
 		},
 		isFull : function(callback) {
-			this.gameInfo.isFull(gameId, callback);
+			this.gameState.isFull(gameId, callback);
 		}
 	}, function(err, res) {
 		if (err)
