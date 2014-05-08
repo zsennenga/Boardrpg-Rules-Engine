@@ -16,6 +16,13 @@ GameState.prototype.getLock = function(gameId, cb)	{
 	
 }
 
+GameState.prototype.releaseLockRollback = function(gameId, conn, cb)	{
+	conn.query("ROLLBACK", function(err, res) {
+		conn.release();
+		cb(null, null);
+	});
+}
+
 GameState.prototype.releaseLock = function(gameId, conn, cb)	{
 	conn.query("COMMIT", function(err, res) {
 		if (err)	{
