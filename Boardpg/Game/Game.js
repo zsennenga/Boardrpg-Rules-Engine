@@ -1,4 +1,3 @@
-'use strict';
 function Game(gS, gI) {
 	var gameState = gS;
 	var gameData = gI;
@@ -11,13 +10,18 @@ function Game(gS, gI) {
  * used for the lock. Also begins a transaction.
  * 
  * @param gameId
- * @param cb
- *            callback from async.js
+ * @param cb callback from async.js
  */
 Game.prototype.getLock = function(gameId, cb) {
 	this.gameState.getLock(gameId, cb);
 };
 
+/**
+ * Releases the lock on a given database row and rolls back the transaction.
+ * @param gameId
+ * @param conn
+ * @param cb
+ */
 Game.prototype.releaseLockErr = function(gameId, conn, cb) {
 	this.gameState.releaseLockRollback(gameId, conn, cb);
 };
@@ -53,12 +57,14 @@ Game.prototype.activeAndState = function(gameId, playerId, state, conn, cb) {
 			this.gameState.getActivityAndState(gameId, conn, callback);
 		}
 	}, function(err, res) {
-		if (typeof state !== object) {
+		if (typeof state !== 'object') {
 			state = [ state ];
 		}
-		if (res.activeAndState.active === 1
-				&& state.indexOf(res.activeAndState.state) > -1) {
+		if (res.activeAndState.active === 1	&& state.indexOf(res.activeAndState.state) > -1) {
 			cb(null, true);
+		}
+		else	{
+			cb("GAME_NOT_WAITING", false);
 		}
 	});
 };

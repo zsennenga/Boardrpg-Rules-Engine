@@ -1,13 +1,10 @@
-'use strict';
-function DBWrapper(d, c)	{
-	this.db = d;
-	this.conf = c;
-	this.conn = this.db.createPool(
-		{ user: conf.user, 
-		  database: conf.db, 
-		  host: conf.host, 
-		  password: conf.pass}
-		);
+function DBWrapper(d, c) {
+	var db = d;
+	var conf = c;
+	var conn = this.db.createPool({
+		user : this.conf.user,
+		database : this.conf.db,
+		host : this.conf.host,
+		password : this.conf.pass
+	});
 }
-
-function 
