@@ -4,7 +4,7 @@ require('./Data/State');
 var db = require('mysql2')
 , io = require('socket.io')
 , storage = require('./IO/DB')(db)
-, eventData = require('./Data/EventData')
+, eventData = JSON.parse('./Data/EventData.json')
 , stateValidators = require('./Game/StateValidators')(storage)
 , eventHandlers = require('./Game/EventHandlers')(storage);
 
