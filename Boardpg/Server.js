@@ -111,7 +111,7 @@ io.sockets.on('connection', function(socket) {
 		 */
 		async.series([ function(callback) {
 			//Get Connection
-			storage.startTransaction(socket.gameId, callback)
+			storage.startTransaction(socket.gameId, callback);
 		} ], function(err, res) {
 			if (err) {
 				socket.emit('error', err);
@@ -123,12 +123,12 @@ io.sockets.on('connection', function(socket) {
 					function(callback) {
 						//Validate GameState
 						stateValidators.stateChecker(data, socket.gameId,
-								socket.playerId, cb, conn);
+								socket.playerId, callback, conn);
 					},
 					function(callback) {
 						//Execute event Handler
 						eventHandlers.eventHandler.execute(data, socket.gameId,
-								socket.playerId, cb, conn);
+								socket.playerId, callback, conn);
 					} ], function(error) {
 				if (error) {
 					storage.rollbackAndClose(conn);
@@ -150,11 +150,11 @@ io.sockets.on('connection', function(socket) {
 	 * session value. This persists as long as the socket is open.
 	 */
 	socket.on('authenticate', function(data) {
-		if (!(playerId in data) || !(auth in data)) {
+		if (!('playerId' in data) || !('auth' in data)) {
 			socket.emit('error', 'INVALID_AUTH_PARAMS');
 		}
-		playerData.auth(data.playerId, auth, function(status, resp) {
-			socket.auth = status
+		playerData.auth(data.playerId, data.auth, function(status, resp) {
+			socket.auth = status;
 			if (status) {
 				socket.playerId = data.playerId;
 			}
@@ -171,7 +171,7 @@ io.sockets.on('connection', function(socket) {
 		if (!socket.auth) {
 			socket.emit('error', 'NO_AUTH');
 		}
-		if (!(gameId in data)) {
+		if (!('gameId' in data)) {
 			socket.emit('error', 'INVALID_JOIN_PARAMS');
 		}
 		/**
@@ -182,7 +182,7 @@ io.sockets.on('connection', function(socket) {
 		 */
 		async.series([ function(callback) {
 			//Get Connection
-			storage.startTransaction(data.gameId, callback)
+			storage.startTransaction(data.gameId, callback);
 		} ], function(err, res) {
 			if (err) {
 				socket.emit('error', err);
@@ -193,12 +193,12 @@ io.sockets.on('connection', function(socket) {
 			async.parallel({
 				exists : function(callback) {
 					//Validate GameState
-					stateValidators.gameExists(data.gameId, callback, conn);
+					stateValidators.gameExists(data.gameId, conn, callback);
 				},
 				playerInGame : function(callback) {
 					//Execute event Handler
 					stateValidators.playerInGame(data.gameId, socket.playerId,
-							callback, conn);
+							conn, callback);
 				}
 			}, function(error, res) {
 				storage.commitAndClose(conn);
@@ -206,11 +206,11 @@ io.sockets.on('connection', function(socket) {
 					socket.emit('error', error);
 					return;
 				}
-				if (!res['exists']) {
+				if (!res.exists) {
 					socket.emit('error', 'GAME_NOT_EXIST');
 					return;
 				}
-				if (!res['playerInGame']) {
+				if (!res.playerInGame) {
 					socket.emit('error', 'PLAYER_NOT_IN_GAME');
 				}
 

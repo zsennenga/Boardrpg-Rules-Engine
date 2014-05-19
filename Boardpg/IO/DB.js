@@ -9,4 +9,20 @@ function DBWrapper(d, c) {
 	});
 }
 
+DBWrapper.prototype.startTransaction = function(gameId, cb) {
+
+};
+
+DBWrapper.prototype.rollbackAndClose = function(conn) {
+
+};
+
+DBWrapper.prototype.commitAndClose = function(conn) {
+
+};
+
+DBWrapper.prototype.close = function(conn) {
+
+};
+
 module.exports = DBWrapper;
