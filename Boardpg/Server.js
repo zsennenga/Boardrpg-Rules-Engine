@@ -11,12 +11,14 @@ var playerData = require('./Game/PlayerData')(storage);
 var gameData = require('./Game/GameData');
 var stateValidators = require('./Game/StateValidators')(storage);
 var eventHandlers = require('./Game/EventHandlers')(storage);
+var log = require('./IO/Log');
 
 io.sockets.on('connection', function(socket) {
-
 	socket.auth = false;
 	socket.playerId = null;
 	socket.gameId = null;
+	socket.logId = log.startLog(socket.handshake.address.address);
+	socket.logEventId = null;
 
 	/**
 	 * This handles all the logic that interacts with, or 
@@ -30,19 +32,20 @@ io.sockets.on('connection', function(socket) {
 	 * actions considered "not part of the gamestate"
 	 */
 	socket.on('gameState', function(data) {
+		socket.logEventId = log.startEvent('gameState', socket.logId);
 		if (!socket.auth) {
-			socket.emit('error', 'NO_AUTH');
+			log.eventAndEmit('error', 'NO_AUTH', data, socket);
 			return;
 		}
 		if (!socket.gameId) {
-			socket.emit('error', 'NO_GAME');
+			log.eventAndEmit('error', 'NO_GAME', data, socket);
 			return;
 		}
 		/**
 		 * Check if an eventName was given
 		 */
 		if (!('eventName' in data)) {
-			socket.emit('error', 'NO_EVENT');
+			log.eventAndEmit('error', 'NO_EVENT', data, socket);
 			return;
 		}
 
@@ -50,7 +53,7 @@ io.sockets.on('connection', function(socket) {
 		 * Checks if the event actually exists/has handlers
 		 */
 		if (!(data.eventName in eventData)) {
-			socket.emit('error', 'INVALID_EVENT');
+			log.eventAndEmit('error', 'INVALID_EVENT', data, socket);
 			return;
 		}
 
@@ -63,7 +66,7 @@ io.sockets.on('connection', function(socket) {
 		 * the request
 		 */
 		if (!stateValidators.checkSocketParams(event.socketParams, data)) {
-			socket.emit('error', 'INVALID_GAMESTATE_PARAMS');
+			log.eventAndEmit('error', 'INVALID_GAMESTATE_PARAMS', data, socket);
 			return;
 		}
 
@@ -71,7 +74,7 @@ io.sockets.on('connection', function(socket) {
 		 * Checks if the statehandler for this event exists
 		 */
 		if (!(stateChecker in stateValidators)) {
-			socket.emit('error', 'NO_STATE_CHECKER');
+			log.eventAndEmit('error', 'NO_STATE_CHECKER', data, socket);
 			return;
 		}
 
@@ -79,7 +82,7 @@ io.sockets.on('connection', function(socket) {
 		 * Check if the eventHandler exists
 		 */
 		if (!(eventHandler in eventHandlers)) {
-			socket.emit('error', 'NO_EVENT_HANDLER');
+			log.eventAndEmit('error', 'NO_EVENT_HANDLER', data, socket);
 			return;
 		}
 		/**
@@ -114,7 +117,7 @@ io.sockets.on('connection', function(socket) {
 			storage.startTransaction(socket.gameId, callback);
 		} ], function(err, res) {
 			if (err) {
-				socket.emit('error', err);
+				log.eventAndEmit('error', err, data, socket);
 				return;
 			}
 			//Pass to next set of tasks
@@ -132,10 +135,10 @@ io.sockets.on('connection', function(socket) {
 					} ], function(error) {
 				if (error) {
 					storage.rollbackAndClose(conn);
-					socket.emit('error', error);
+					log.eventAndEmit('error', error, data, socket);
 				} else {
 					storage.commitAndClose(conn);
-					socket.emit('gameState', res[1]);
+					log.eventAndEmit('gameState', res[1], data, socket);
 				}
 			});
 		});
@@ -150,15 +153,16 @@ io.sockets.on('connection', function(socket) {
 	 * session value. This persists as long as the socket is open.
 	 */
 	socket.on('authenticate', function(data) {
+		socket.logEventId = log.startEvent('authenticate', socket.logId);
 		if (!('playerId' in data) || !('auth' in data)) {
-			socket.emit('error', 'INVALID_AUTH_PARAMS');
+			log.eventAndEmit('error', 'INVALID_AUTH_PARAMS', data, socket);
 		}
 		playerData.auth(data.playerId, data.auth, function(status, resp) {
 			socket.auth = status;
 			if (status) {
 				socket.playerId = data.playerId;
 			}
-			socket.emit('gameState', resp);
+			log.eventAndEmit('gameState', resp, data, socket);
 		});
 	});
 
@@ -168,11 +172,12 @@ io.sockets.on('connection', function(socket) {
 	 * which is required to join a game. '
 	 */
 	socket.on('setGame', function(data) {
+		socket.logEventId = log.startEvent('setGame', socket.logId);
 		if (!socket.auth) {
-			socket.emit('error', 'NO_AUTH');
+			log.eventAndEmit('error', 'NO_AUTH', data, socket);
 		}
 		if (!('gameId' in data)) {
-			socket.emit('error', 'INVALID_JOIN_PARAMS');
+			log.eventAndEmit('error', 'INVALID_JOIN_PARAMS', data, socket);
 		}
 		/**
 		 * 1. Get a connection
@@ -185,7 +190,7 @@ io.sockets.on('connection', function(socket) {
 			storage.startTransaction(data.gameId, callback);
 		} ], function(err, res) {
 			if (err) {
-				socket.emit('error', err);
+				log.eventAndEmit('error', err, data, socket);
 				return;
 			}
 			//Pass to next set of tasks
@@ -203,19 +208,19 @@ io.sockets.on('connection', function(socket) {
 			}, function(error, res) {
 				storage.commitAndClose(conn);
 				if (error) {
-					socket.emit('error', error);
+					log.eventAndEmit('error', error, data, socket);
 					return;
 				}
 				if (!res.exists) {
-					socket.emit('error', 'GAME_NOT_EXIST');
+					log.eventAndEmit('error', 'GAME_NOT_EXIST', data, socket);
 					return;
 				}
 				if (!res.playerInGame) {
-					socket.emit('error', 'PLAYER_NOT_IN_GAME');
+					log.eventAndEmit('error', 'PLAYER_NOT_IN_GAME', data, socket);
 				}
 
 				socket.gameId = data.gameId;
-				socket.emit('gameState', res);
+				log.eventAndEmit('gameState', res, data, socket);
 			});
 		});
 	});
