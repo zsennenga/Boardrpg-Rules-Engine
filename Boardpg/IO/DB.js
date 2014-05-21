@@ -2,10 +2,10 @@ function DBWrapper(d, c) {
 	this.db = d;
 	this.conf = c;
 	this.pool = this.db.createPool({
-		user : this.conf.user,
-		database : this.conf.db,
-		host : this.conf.host,
-		password : this.conf.pass
+		user : GLOBAL.DB_USER,
+		database : GLOBAL.DATABASE,
+		host : GLOBAL.DB_HOST,
+		password : GLOBAL.DB_PW
 	});
 }
 

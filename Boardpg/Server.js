@@ -1,10 +1,10 @@
 require('./Data/Config');
 require('./Data/State');
 
-var eventData = JSON.parse('./Data/EventData.json');
+var eventData = require('./Data/EventData.json');
 
 var db = require('mysql2');
-var io = require('socket.io');
+var io = require('socket.io').listen(8080);
 var async = require('async');
 var storage = require('./IO/DB')(db);
 var playerData = require('./Game/PlayerData')(storage);
@@ -90,11 +90,11 @@ io.sockets.on('connection', function(socket) {
 		 * 1. Get a connection with an
 		 * active transaction, lock the row if necessary 
 		 * 2. Pass the transaction to another series of tasks 
-		 * 		1. Check the gameState is correct for the
-		 * 		given event 
-		 * 		2. Make the change in gameState necessary. 
-		 * 		3a. If error, rollback the transaction and close the connection 
-		 * 		3b. If no error, commit the transaction and close the connection
+		 *		1. Check the gameState is correct for the
+		 *		given event 
+		 *		2. Make the change in gameState necessary. 
+		 *		3a. If error, rollback the transaction and close the connection 
+		 *		3b. If no error, commit the transaction and close the connection
 		 * 
 		 * This is managed by async.js.
 		 * 
