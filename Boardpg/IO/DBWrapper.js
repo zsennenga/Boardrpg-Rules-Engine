@@ -2,6 +2,7 @@ function DBWrapper(d, c) {
 	this.db = d;
 	this.conf = c;
 	this.pool = this.db.createPool({
+		connectionLimit : 300,
 		user : GLOBAL.DB_USER,
 		database : GLOBAL.DATABASE,
 		host : GLOBAL.DB_HOST,
@@ -15,10 +16,16 @@ DBWrapper.prototype.startTransaction = function(gameId, cb) {
 			cb(err, null);
 		}
 		conn.query("BEGIN");
-		if (gameId)	{
-			conn.query("SELECT gameId from " + GLOBAL.GAME_TABLE + "WHERE gameId = ? FOR UPDATE", [ gameId ]);
+		if (gameId) {
+			conn.query("SELECT gameId from " + GLOBAL.GAME_TABLE
+					+ "WHERE gameId = ? FOR UPDATE", [ gameId ], function(err, res) {
+				if (err) {
+					cb(err, null);
+				}
+				cb(null, true);
+			});
 		}
-		cb(null, conn);
+
 	});
 };
 

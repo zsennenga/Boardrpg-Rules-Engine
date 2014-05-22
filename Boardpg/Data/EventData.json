@@ -1,12 +1,12 @@
 {
-	"joinGame": 
+	"createGame": 
 	{
 		"socketParams": 
 		[
-			
+			"gameId"
 		],
 
-		"stateChecker": "",
-		"handler": ""
+		"stateChecker": "canCreateGame",
+		"handler": "createGame"
 	}
 }
