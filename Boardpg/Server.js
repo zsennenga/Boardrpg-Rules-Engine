@@ -11,7 +11,7 @@ var playerData = require('./Game/PlayerData')(storage);
 var gameData = require('./Game/GameData');
 var stateValidators = require('./Game/StateValidators')(storage);
 var eventHandlers = require('./Game/EventHandlers')(storage);
-var log = require('./IO/Log');
+var log = require('./IO/Log')(storage);
 
 io.sockets.on('connection', function(socket) {
 	socket.auth = false;
@@ -132,7 +132,7 @@ io.sockets.on('connection', function(socket) {
 						//Execute event Handler
 						eventHandlers.eventHandler.execute(data, socket.gameId,
 								socket.playerId, callback, conn);
-					} ], function(error) {
+					} ], function(error, res) {
 				if (error) {
 					storage.rollbackAndClose(conn);
 					log.eventAndEmit('error', error, data, socket);

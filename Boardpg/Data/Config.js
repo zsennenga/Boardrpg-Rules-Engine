@@ -2,3 +2,5 @@ GLOBAL.DB_USER = 'root';
 GLOBAL.DB_PASS = '';
 GLOBAL.DATABASE = 'boardpg';
 GLOBAL.HOST = '127.0.0.1';
+
+GLOBAL.GAME_TABLE = '';
