@@ -10,7 +10,7 @@ function StateValidators(storage) {
  * @returns {Boolean}
  */
 StateValidators.prototype.checkSocketParams = function(params, data) {
-	if (params.length === 0)	{
+	if (params.length === 0) {
 		return true;
 	}
 	for ( var param in params) {
@@ -22,6 +22,17 @@ StateValidators.prototype.checkSocketParams = function(params, data) {
 	return true;
 };
 
+StateValidators.prototype.checkState = function(states, gameId, conn, cb) {
+	if (states === []) {
+		cb(null, true);
+	}
+
+	conn.query("SELECT gameState from " + GLOBAL.GAME_TABLE + " WHERE gameId = ?",
+			[ gameId ], function(err, res) {
+
+			});
+};
+
 StateValidators.prototype.genericValidator = function(sParams, gameId,
 		playerId, cb, conn) {
 	cb(null, true);
@@ -30,9 +41,9 @@ StateValidators.prototype.genericValidator = function(sParams, gameId,
 StateValidators.prototype.canCreateGame = function(sParams, gameId, playerId,
 		cb, conn) {
 	/**
-	 * Not sure exactly what needs to get checked here.
-	 * Maybe check if the player is already in a game? 
-	 * Maybe check if the player is allowed to make games? Idk.
+	 * Not sure exactly what needs to get checked here. Maybe check if the
+	 * player is already in a game? Maybe check if the player is allowed to make
+	 * games? Idk.
 	 */
 	cb(null, true);
 };
