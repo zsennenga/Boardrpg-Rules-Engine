@@ -1,7 +1,7 @@
 require('./Data/Config');
 require('./Data/State');
 
-var eventData = require('./Data/EventData.json');
+var eventData = require('./Data/EventData.js').eventData;
 
 var db = require('mysql2');
 var io = require('socket.io').listen(8080);
@@ -58,6 +58,7 @@ io.sockets.on('connection', function(socket) {
 		}
 
 		var event = eventData[data.eventName];
+		var validStates = event.validStates;
 		var stateChecker = event.stateChecker;
 		var eventHandler = event.handler;
 

@@ -10,6 +10,9 @@ function StateValidators(storage) {
  * @returns {Boolean}
  */
 StateValidators.prototype.checkSocketParams = function(params, data) {
+	if (params.length === 0)	{
+		return true;
+	}
 	for ( var param in params) {
 		if (!(param in data)) {
 			return false;
@@ -28,6 +31,8 @@ StateValidators.prototype.canCreateGame = function(sParams, gameId, playerId,
 		cb, conn) {
 	/**
 	 * Not sure exactly what needs to get checked here.
+	 * Maybe check if the player is already in a game? 
+	 * Maybe check if the player is allowed to make games? Idk.
 	 */
 	cb(null, true);
 };
