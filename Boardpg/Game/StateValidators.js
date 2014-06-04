@@ -22,6 +22,14 @@ StateValidators.prototype.checkSocketParams = function(params, data) {
 	return true;
 };
 
+/**
+ * Checks if the game is in one of a specified set of states
+ * 
+ * @param states
+ * @param gameId
+ * @param conn
+ * @param cb
+ */
 StateValidators.prototype.checkState = function(states, gameId, conn, cb) {
 	if (states === []) {
 		cb(null, true);
@@ -32,12 +40,29 @@ StateValidators.prototype.checkState = function(states, gameId, conn, cb) {
 
 			});
 };
-
+/**
+ * Validator that always returns true
+ * 
+ * @param sParams
+ * @param gameId
+ * @param playerId
+ * @param cb
+ * @param conn
+ */
 StateValidators.prototype.genericValidator = function(sParams, gameId,
 		playerId, cb, conn) {
 	cb(null, true);
 };
 
+/**
+ * Checks if a game can be created by a given player
+ * 
+ * @param sParams
+ * @param gameId
+ * @param playerId
+ * @param cb
+ * @param conn
+ */
 StateValidators.prototype.canCreateGame = function(sParams, gameId, playerId,
 		cb, conn) {
 	/**
@@ -48,6 +73,12 @@ StateValidators.prototype.canCreateGame = function(sParams, gameId, playerId,
 	cb(null, true);
 };
 
+/**
+ * Checks if a game exists before we let you join it.
+ * @param gameId
+ * @param conn
+ * @param cb
+ */
 StateValidators.prototype.gameExists = function(gameId, conn, cb) {
 	conn.query("SELECT gameId from " + GLOBAL.GAME_TABLE
 			+ " where gameId = ?"[gameId], function(err, res) {
@@ -62,6 +93,14 @@ StateValidators.prototype.gameExists = function(gameId, conn, cb) {
 	});
 };
 
+/**
+ * Checks if a player is in some game before we let them join it.
+ * 
+ * @param gameId
+ * @param playerId
+ * @param conn
+ * @param cb
+ */
 StateValidators.prototype.playerInGame = function(gameId, playerId, conn, cb) {
 	conn.query("SELECT players from " + GLOBAL.GAME_TABLE
 			+ " where gameId = ?"[gameId], function(err, res) {

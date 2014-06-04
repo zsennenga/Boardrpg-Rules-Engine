@@ -1,5 +1,6 @@
 var state = {};
 
+state.NO_STATE = -2;
 state.GAME_OVER = -1;
 state.WAIT_FOR_PLAYERS = 0;
 state.BOARD = 1;

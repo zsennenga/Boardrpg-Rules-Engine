@@ -6,16 +6,14 @@ var eventData = {
 		],
 
 		"requiresActive" : true,
-		"validStates" : [
-
-		],
+		"validStates" : [ GLOBAL.state.NO_STATE ],
 
 		"stateChecker" : "",
 		"handler" : ""
 	},
 
 	"createGame" : {
-		"socketParams" : [ "gameId" ],
+		"socketParams" : [],
 
 		"requiresActive" : false,
 		"validStates" : [
