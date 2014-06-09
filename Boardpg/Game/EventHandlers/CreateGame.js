@@ -1,8 +1,4 @@
-function CreateGame(storage) {
-	this.db = storage;
-}
-
-CreateGame.prototype.execute = function(sParams, gameId, playerId, cb, conn) {
+function execute(sParams, gameId, playerId, cb, conn) {
 	//Need to iron out the schema
 	conn.query('INSERT INTO ' + GLOBAL.GAME_TABLE + ' VALUES ()', function(err, res)	{
 		if (err)	{
@@ -14,4 +10,4 @@ CreateGame.prototype.execute = function(sParams, gameId, playerId, cb, conn) {
 	});
 };
 
-module.exports = CreateGame;
+module.exports.execute = execute;

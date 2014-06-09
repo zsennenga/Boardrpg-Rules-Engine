@@ -3,4 +3,6 @@ GLOBAL.DB_PASS = '';
 GLOBAL.DATABASE = 'boardpg';
 GLOBAL.HOST = '127.0.0.1';
 
-GLOBAL.GAME_TABLE = '';
+GLOBAL.GAME_TABLE = 'games';
+GLOBAL.PLAYERGAME_TABLE = 'gameplayers';
+GLOBAL.PLAYER_TABLE = 'players';

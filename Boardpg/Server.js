@@ -38,25 +38,34 @@ io.sockets.on('connection', function(socket) {
      */
     socket.on('gameState', function(data, fn) {
         data = util.tryParseJson(data);
-        if ('gD' in data)   {
-            log.eventAndEmit('error', 'INVALD_JSON', data, socket, fn);
+        var resp = util.format('error', '');
+        if ('gD' in data) {
+            resp.data = 'INVALID_JSON';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
         console.log("Got data in gameState " + data);
         socket.logEventId = log.startEvent('gameState', socket.logId);
         if (!socket.auth) {
-            log.eventAndEmit('error', 'NO_AUTH', data, socket, fn);
+            resp.data = 'NO_AUTH';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
         if (!socket.gameId) {
-            log.eventAndEmit('error', 'NO_GAME_SET', data, socket, fn);
+            resp.data = 'NO_GAME_SET';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
         /**
          * Check if an eventName was given
          */
         if (!('eventName' in data)) {
-            log.eventAndEmit('error', 'NO_EVENT', data, socket, fn);
+            resp.data = 'NO_EVENT';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
 
@@ -64,7 +73,9 @@ io.sockets.on('connection', function(socket) {
          * Checks if the event actually exists/has handlers
          */
         if (!(data.eventName in eventData)) {
-            log.eventAndEmit('error', 'INVALID_EVENT', data, socket, fn);
+            resp.data = 'INVALID_EVENT';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
 
@@ -77,7 +88,9 @@ io.sockets.on('connection', function(socket) {
          * Check if the socket data contains the parameters necessary to execute the request
          */
         if (!stateValidators.checkSocketParams(event.socketParams, data)) {
-            log.eventAndEmit('error', 'INVALID_GAMESTATE_PARAMS', data, socket, fn);
+            resp.data = 'INVALID_GAMESTATE_PARAMS';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
 
@@ -85,7 +98,9 @@ io.sockets.on('connection', function(socket) {
          * Checks if the statehandler for this event exists
          */
         if (!(stateChecker in stateValidators)) {
-            log.eventAndEmit('error', 'NO_STATE_CHECKER', data, socket, fn);
+            resp.data = 'NO_STATE_CHECKER';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
 
@@ -93,20 +108,21 @@ io.sockets.on('connection', function(socket) {
          * Check if the eventHandler exists
          */
         if (!(eventHandler in eventHandlers)) {
-            log.eventAndEmit('error', 'NO_EVENT_HANDLER', data, socket, fn);
+            resp.data = 'NO_EVENT_HANDLER';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
         /**
-         * Perform the following tasks in series 
+         * Perform the following tasks in series
          * 
          * 1. Get a connection with an active transaction, lock the row if necessary
          * 
-         * 2. Pass the transaction to another series of tasks 
+         * 2. Pass the transaction to another series of tasks
          * 
-         *      1. Check the gameState is correct for the given event 
-         *      2. Make the change in gameState necessary. 
-         *      3a. If error, rollback the transaction and close the connection 
-         *      3b. If no error, commit the transaction and close the connection
+         * 1. Check the gameState is correct for the given event 2. Make the change in gameState
+         * necessary. 3a. If error, rollback the transaction and close the connection 3b. If no
+         * error, commit the transaction and close the connection
          * 
          * This is managed by async.js.
          * 
@@ -129,7 +145,9 @@ io.sockets.on('connection', function(socket) {
             storage.startTransaction(socket.gameId, callback);
         } ], function(err, res) {
             if (err) {
-                log.eventAndEmit('error', err, data, socket, fn);
+                resp.data = err;
+                log.event(socket.logId, resp, data);
+                fn(resp);
                 return;
             }
             // Pass to next set
@@ -145,14 +163,19 @@ io.sockets.on('connection', function(socket) {
                 // Execute
                 // event
                 // Handler
-                eventHandlers.eventHandler.execute(data, socket.gameId, socket.playerId, callback, conn);
+                eventHandlers.eventHandler(data, socket.gameId, socket.playerId, callback, conn);
             } ], function(error, res) {
                 if (error) {
                     storage.rollbackAndClose(conn);
-                    log.eventAndEmit('error', error, data, socket, fn);
+                    resp.data = error;
+                    log.event(socket.logId, resp, data);
+                    fn(resp);
                 } else {
                     storage.commitAndClose(conn);
-                    log.eventAndEmit('gameState', res[1], data, socket, fn, io);
+                    resp.code = 'gameState';
+                    resp.data = res;
+                    log.event(socket.logId, resp, data);
+                    io.to(socket.gameId).emit('gameState', res);
                 }
             });
         });
@@ -166,27 +189,37 @@ io.sockets.on('connection', function(socket) {
      * They do this by giving us their playerId and some to-be-determined session value. This
      * persists as long as the socket is open.
      */
-    socket.on('authenticate', function(data, fn) { 
+    socket.on('authenticate', function(data, fn) {
+        var resp = util.format('error', '');
         data = util.tryParseJson(data);
-        if ('gD' in data)   {
-            log.eventAndEmit('error', 'INVALD_JSON', data, socket, fn);
+        if ('gD' in data) {
+            resp.data = 'INVALID_JSON';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
-        if (socket.auth)    {
-            log.eventAndEmit('error', 'ALREADY_AUTHED', data, socket, fn);
+        if (socket.auth) {
+            resp.data = 'ALREADY_AUTHED';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
         socket.logEventId = log.startEvent('authenticate', socket.logId);
         if (!('playerId' in data) || !('auth' in data)) {
-            log.eventAndEmit('error', 'INVALID_AUTH_PARAMS', data, socket, fn);
+            resp.data = 'INVALID_AUTH_PARAMS';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
-        playerData.auth(data.playerId, data.auth, function(status, resp) {
+        playerData.auth(data.playerId, data.auth, function(status, authResp) {
             socket.auth = status;
             if (status) {
                 socket.playerId = data.playerId;
             }
-            log.eventAndEmit('authStatus', resp, data, socket, fn, io);
+            resp.code = 'authStatus';
+            resp.data = true;
+            log.event(socket.logId, resp, data);
+            fn(resp);
         });
     });
 
@@ -195,30 +228,48 @@ io.sockets.on('connection', function(socket) {
      * can issue any other commands, except authenticate, which is required to join a game. '
      */
     socket.on('setGame', function(data, fn) {
+        var resp = util.format('error', '');
         data = util.tryParseJson(data);
-        if ('gD' in data)   {
-            log.eventAndEmit('error', 'INVALD_JSON', data, socket, fn);
+        if ('gD' in data) {
+            resp.data = 'INVALID_JSON';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
         socket.logEventId = log.startEvent('setGame', socket.logId);
         if (!socket.auth) {
-            log.eventAndEmit('error', 'NO_AUTH', data, socket, fn);
+            resp.data = 'NO_AUTH';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
         if (!('gameId' in data)) {
-            log.eventAndEmit('error', 'INVALID_JOIN_PARAMS', data, socket, fn);
+            resp.data = 'INVALID_JOIN_PARAMS';
+            log.event(socket.logId, resp, data);
+            fn(resp);
             return;
         }
+        if (isNaN(parseInt(data.gameId, 10))) {
+            resp.data = 'INVALID_GAME_ID';
+            log.event(socket.logId, resp, data);
+            fn(resp);
+            return;
+        }
+        data.gameId = +data.gameId;
         /**
          * 1. Get a connection 2. Execute all the validators 3. Close connection 4. Check if
          * validators returned true
          */
         async.series([ function(callback) {
             // Get Connection
-            storage.startTransaction(data.gameId, callback);
+
+            storage.startTransaction(null, callback);
         } ], function(err, res) {
             if (err) {
-                log.eventAndEmit('error', err, data, socket, fn);
+                console.log('Failed to Get Transaction/Connection');
+                resp.data = err;
+                log.event(socket.logId, resp, data);
+                fn(resp);
                 return;
             }
             // Pass to next set of tasks
@@ -235,21 +286,44 @@ io.sockets.on('connection', function(socket) {
             }, function(error, res) {
                 storage.commitAndClose(conn);
                 if (error) {
-                    log.eventAndEmit('error', error, data, socket, fn);
+                    console.log('Failed to check validators');
+                    resp.data = error;
+                    log.event(socket.logId, resp, data);
+                    fn(resp);
                     return;
                 }
                 if (!res.exists) {
-                    log.eventAndEmit('error', 'GAME_NOT_EXIST', data, socket, fn);
+                    resp.data = 'GAME_NOT_EXIST';
+                    log.event(socket.logId, resp, data);
+                    fn(resp);
                     return;
                 }
                 if (!res.playerInGame) {
-                    log.eventAndEmit('error', 'PLAYER_NOT_IN_GAME', data, socket, fn);
+                    resp.data = 'PLAYER_NOT_IN_GAME';
+                    log.event(socket.logId, resp, data);
+                    fn(resp);
                     return;
                 }
+               
+                eventHandlers.fullStateUpdate(storage, data.gameId, function(errData, gameStateData) {
+                    if (errData)    {
+                        resp.data = errData;
+                        log.event(socket.logId, resp, data);
+                        fn(resp);
+                        return;
+                    }
+                    
+                    resp.code = 'gameState';
+                    resp.data = gameStateData;
+                    
+                    fn(resp);
 
-                socket.gameId = data.gameId;
-                socket.join(data.gameId);
-                log.eventAndEmit('gameState', res, data, socket, fn, io);
+                    log.event(socket.logId, resp, data);
+                    
+                    socket.gameId = data.gameId;
+                    socket.join(data.gameId);
+                    
+                });
             });
         });
     });
