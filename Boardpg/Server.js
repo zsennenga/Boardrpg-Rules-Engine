@@ -163,7 +163,7 @@ io.sockets.on('connection', function(socket) {
                 // Execute
                 // event
                 // Handler
-                eventHandlers.eventHandler(data, socket.gameId, socket.playerId, callback, conn);
+                eventHandlers.eventHandler(data, gameData, socket.gameId, socket.playerId, callback, conn);
             } ], function(error, res) {
                 if (error) {
                     storage.rollbackAndClose(conn);
