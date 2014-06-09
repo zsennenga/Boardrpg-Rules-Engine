@@ -1,23 +1,38 @@
 require('./Data/Config');
+
+console.log('Loading GameState data');
 require('./Data/State');
 
+console.log('Loading EventData');
 var eventData = require('./Data/EventData.js').eventData;
 
+console.log('Loading third-pary libraries');
 var db = require('mysql2');
 var socketsIO = require('socket.io');
 var async = require('async');
+
+console.log('Connecting to database');
 var storage = new (require('./IO/DBWrapper'))(db);
-var playerData = new (require('./Game/PlayerData'))();
+
+console.log('Loading gameData');
 var gameData = require('./Game/GameData');
+
+console.log('Loading State and Event Handlers');
 var stateValidators = new (require('./Game/StateValidators'))();
 var eventHandlers = new (require('./Game/EventHandlers'))();
-var log = new (require('./IO/Log'))(storage);
+
+console.log('Loading the rest');
+var playerData = new (require('./Game/PlayerData'))();
 var util = require('./Common/Util.js');
 
-var io = socketsIO();
+console.log('Starting Logger');
+var log = new (require('./IO/Log'))(storage);
 
+console.log('Starting sockets.io');
+var io = socketsIO();
 io.attach(8080);
 
+console.log('Configuring socket.io packet handlers');
 io.sockets.on('connection', function(socket) {
 
     console.log("Got connection from " + socket.handshake.address.address);
@@ -45,7 +60,6 @@ io.sockets.on('connection', function(socket) {
             fn(resp);
             return;
         }
-        console.log("Got data in gameState " + data);
         socket.logEventId = log.startEvent('gameState', socket.logId);
         if (!socket.auth) {
             resp.data = 'NO_AUTH';
