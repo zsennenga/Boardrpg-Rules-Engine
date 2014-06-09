@@ -7,10 +7,10 @@ var db = require('mysql2');
 var socketsIO = require('socket.io');
 var async = require('async');
 var storage = new (require('./IO/DBWrapper'))(db);
-var playerData = new (require('./Game/PlayerData'))(storage);
+var playerData = new (require('./Game/PlayerData'))();
 var gameData = require('./Game/GameData');
-var stateValidators = new (require('./Game/StateValidators'))(storage);
-var eventHandlers = new (require('./Game/EventHandlers'))(storage);
+var stateValidators = new (require('./Game/StateValidators'))();
+var eventHandlers = new (require('./Game/EventHandlers'))();
 var log = new (require('./IO/Log'))(storage);
 var util = require('./Common/Util.js');
 
@@ -211,6 +211,13 @@ io.sockets.on('connection', function(socket) {
             fn(resp);
             return;
         }
+        if (isNaN(parseInt(data.playerId, 10))) {
+            resp.data = 'INVALID_PLAYER_ID';
+            log.event(socket.logId, resp, data);
+            fn(resp);
+            return;
+        }
+        data.playerId = +data.playerId;
         playerData.auth(data.playerId, data.auth, function(status, authResp) {
             socket.auth = status;
             if (status) {
@@ -229,6 +236,12 @@ io.sockets.on('connection', function(socket) {
      */
     socket.on('setGame', function(data, fn) {
         var resp = util.format('error', '');
+        if (socket.gameId) {
+            resp.data = 'GAME_ALREADY_SET';
+            log.event(socket.logId, resp, data);
+            fn(resp);
+            return;
+        }
         data = util.tryParseJson(data);
         if ('gD' in data) {
             resp.data = 'INVALID_JSON';
@@ -304,25 +317,25 @@ io.sockets.on('connection', function(socket) {
                     fn(resp);
                     return;
                 }
-               
+
                 eventHandlers.fullStateUpdate(storage, data.gameId, function(errData, gameStateData) {
-                    if (errData)    {
+                    if (errData) {
                         resp.data = errData;
                         log.event(socket.logId, resp, data);
                         fn(resp);
                         return;
                     }
-                    
+
                     resp.code = 'gameState';
                     resp.data = gameStateData;
-                    
+
                     fn(resp);
 
                     log.event(socket.logId, resp, data);
-                    
+
                     socket.gameId = data.gameId;
                     socket.join(data.gameId);
-                    
+
                 });
             });
         });
