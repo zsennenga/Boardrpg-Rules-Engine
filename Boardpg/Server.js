@@ -17,9 +17,10 @@ var storage = new (require('./IO/DBWrapper'))(db);
 console.log('Loading gameData');
 var gameData = require('./Game/GameData');
 
-console.log('Loading State and Event Handlers');
+console.log('Loading Stat, Event and PlayerAction Handlers');
 var stateValidators = new (require('./Game/StateValidators'))();
 var eventHandlers = new (require('./Game/EventHandlers'))();
+var playerActionHandlers = new (require('./Game/PlayerActionHandlers'))();
 
 console.log('Loading the rest');
 var playerData = new (require('./Game/PlayerData'))();
@@ -182,7 +183,7 @@ io.sockets.on('connection', function(socket) {
                 eventHandlers[eventHandler](data, gameData, socket.gameId, socket.playerId, callback, conn);
             }, function(callback) {
                 // Handle end of Turn
-                eventHandlers.endTurn(data, gameData, socket.gameId, socket.playerId, callback, conn);
+                eventHandlers.endTurn(data, gameData, playerActionHandlers, socket.gameId, socket.playerId, callback, conn);
             } ], function(error, res) {
                 if (error) {
                     storage.rollbackAndClose(conn);

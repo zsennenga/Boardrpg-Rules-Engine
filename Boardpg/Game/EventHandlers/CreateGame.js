@@ -1,4 +1,4 @@
-function execute(sParams, gameData, gameId, playerId, cb, conn) {
+function execute(sParams, gameData, playerAction, gameId,  playerId, cb, conn) {
     // Need to iron out the schema
     conn.query('INSERT INTO ' + GLOBAL.GAME_TABLE + ' VALUES ()', function(err, res) {
         if (err) {

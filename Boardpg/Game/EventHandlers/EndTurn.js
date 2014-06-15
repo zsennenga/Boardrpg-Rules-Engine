@@ -10,7 +10,7 @@ function endGame()  {
     
 }
 
-function execute(sParams, gameData, gameId, playerId, cb, conn) {
+function execute(sParams, gameData, playerAction, gameId, playerId, cb, conn) {
     endTurn();
     endWeek();
     endGame();

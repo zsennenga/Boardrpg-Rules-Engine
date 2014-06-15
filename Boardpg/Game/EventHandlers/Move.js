@@ -1,4 +1,4 @@
-function execute(sParams, gameData, gameId, playerId, cb, conn) {
+function execute(sParams, gameData, playerAction, gameId, playerId, cb, conn) {
     conn.query("SELECT space FROM " + GLOBAL.PLAYERGAME_TABLE + " WHERE playerId = ? AND gameId = ?", [ playerId, gameId ], function(err, data) {
         if (err) {
             cb(err, null);
