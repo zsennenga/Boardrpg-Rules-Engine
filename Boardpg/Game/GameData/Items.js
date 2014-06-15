@@ -1,3 +1,4 @@
-/**
- * New node file
- */
+function Items() {
+}
+
+module.exports = Items;

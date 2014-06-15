@@ -1,3 +1,4 @@
-/**
- * New node file
- */
+function Classes() {
+}
+
+module.exports = Classes;

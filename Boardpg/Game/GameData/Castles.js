@@ -1,3 +1,4 @@
-/**
- * New node file
- */
+function Castles() {
+}
+
+module.exports = Castles;

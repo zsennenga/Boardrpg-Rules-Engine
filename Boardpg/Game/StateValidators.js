@@ -7,5 +7,6 @@ StateValidators.prototype.nullValidator =       (require('./StateValidators/Null
 StateValidators.prototype.canCreateGame =       (require('./StateValidators/CanCreateGame')).execute;
 StateValidators.prototype.gameExists =          (require('./StateValidators/GameExists')).execute;
 StateValidators.prototype.playerInGame =        (require('./StateValidators/PlayerInGame')).execute;
+StateValidators.prototype.checkActiveAndState = (require('./StateValidators/CheckActiveAndState')).execute;
 
 module.exports = StateValidators;

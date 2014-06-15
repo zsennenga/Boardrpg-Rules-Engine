@@ -4,7 +4,7 @@ console.log('Loading GameState data');
 require('./Data/State');
 
 console.log('Loading EventData');
-var eventData = require('./Data/EventData.js').eventData;
+var eventData = require('./Data/EventData.js');
 
 console.log('Loading third-pary libraries');
 var db = require('mysql2');
@@ -86,7 +86,7 @@ io.sockets.on('connection', function(socket) {
         /**
          * Checks if the event actually exists/has handlers
          */
-        if (!(data.eventName in eventData)) {
+        if (typeof eventData[data.eventName] !== 'object') {
             resp.data = 'INVALID_EVENT';
             log.event(socket.logId, resp, data);
             fn(resp);
@@ -95,6 +95,7 @@ io.sockets.on('connection', function(socket) {
 
         var event = eventData[data.eventName];
         var validStates = event.validStates;
+        var requiresActive = event.requiresActive;
         var stateChecker = event.stateChecker;
         var eventHandler = event.handler;
 
@@ -111,7 +112,7 @@ io.sockets.on('connection', function(socket) {
         /**
          * Checks if the statehandler for this event exists
          */
-        if (!(stateChecker in stateValidators)) {
+        if (typeof stateValidators[stateChecker] !== 'function') {
             resp.data = 'NO_STATE_CHECKER';
             log.event(socket.logId, resp, data);
             fn(resp);
@@ -167,17 +168,21 @@ io.sockets.on('connection', function(socket) {
             // Pass to next set
             // of tasks
             var conn = res[0];
-            async.series([
-
-            function(callback) {
-                // Validate
-                // GameState
-                stateValidators.stateChecker(data, socket.gameId, socket.playerId, callback, conn);
+            async.series([ function(callback) {
+                //Check the basics:
+                //1. If the event requires you to be active are you
+                //2. Are you in one of the states that the event requires?
+                stateValidators.checkActiveAndState(socket.gameId, socket.playerId, validStates, requiresActive, callback, conn);
             }, function(callback) {
-                // Execute
-                // event
-                // Handler
-                eventHandlers.eventHandler(data, gameData, socket.gameId, socket.playerId, callback, conn);
+                // Use the specific state validator for the event
+                // Many state validators don't actually have one, but some require one
+                stateValidators[stateChecker](data, socket.gameId, socket.playerId, callback, conn);
+            }, function(callback) {
+                // Execute event Handler
+                eventHandlers[eventHandler](data, gameData, socket.gameId, socket.playerId, callback, conn);
+            }, function(callback) {
+                // Handle end of Turn
+                eventHandlers.endTurn(data, gameData, socket.gameId, socket.playerId, callback, conn);
             } ], function(error, res) {
                 if (error) {
                     storage.rollbackAndClose(conn);
@@ -186,10 +191,19 @@ io.sockets.on('connection', function(socket) {
                     fn(resp);
                 } else {
                     storage.commitAndClose(conn);
-                    resp.code = 'gameState';
-                    resp.data = res;
-                    log.event(socket.logId, resp, data);
-                    io.to(socket.gameId).emit('gameState', res);
+                    eventHandlers.fullStateUpdate(storage, socket.gameId, function(errData, gameStateData) {
+                        if (errData) {
+                            resp.data = errData;
+                            log.event(socket.logId, resp, data);
+                            fn(resp);
+                            return;
+                        }
+                        resp.code = 'gameStateStatus';
+                        resp.data = true;
+                        fn(resp);
+                        log.event(socket.logId, resp, data);
+                        io.to(socket.gameId).emit('gameState', gameStateData);
+                    });
                 }
             });
         });
@@ -293,7 +307,6 @@ io.sockets.on('connection', function(socket) {
             storage.startTransaction(null, callback);
         } ], function(err, res) {
             if (err) {
-                console.log('Failed to Get Transaction/Connection');
                 resp.data = err;
                 log.event(socket.logId, resp, data);
                 fn(resp);
@@ -313,7 +326,6 @@ io.sockets.on('connection', function(socket) {
             }, function(error, res) {
                 storage.commitAndClose(conn);
                 if (error) {
-                    console.log('Failed to check validators');
                     resp.data = error;
                     log.event(socket.logId, resp, data);
                     fn(resp);
@@ -340,8 +352,8 @@ io.sockets.on('connection', function(socket) {
                         return;
                     }
 
-                    resp.code = 'gameState';
-                    resp.data = gameStateData;
+                    resp.code = 'gameSetStatus';
+                    resp.data = true;
 
                     fn(resp);
 
@@ -349,7 +361,7 @@ io.sockets.on('connection', function(socket) {
 
                     socket.gameId = data.gameId;
                     socket.join(data.gameId);
-
+                    socket.emit('gameState', gameStateData);
                 });
             });
         });

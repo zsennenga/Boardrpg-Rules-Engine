@@ -1,3 +1,4 @@
-/**
- * New node file
- */
+function Monsters() {
+}
+
+module.exports = Monsters;

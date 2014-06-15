@@ -14,4 +14,7 @@ state.COMBAT = 8;
 state.SHOP = 9;
 state.RANDOM_EVENT = 10;
 
+state.DEAD = 11;
+state.END_TURN = 12;
+
 GLOBAL.state = state;

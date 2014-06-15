@@ -16,19 +16,23 @@ DBWrapper.prototype.startTransaction = function(gameId, cb) {
             cb(err, null);
             return;
         }
-        conn.query("BEGIN");
-        if (gameId) {
-            conn.query("SELECT gameId from " + GLOBAL.GAME_TABLE + "WHERE gameId = ? FOR UPDATE", [ gameId ], function(err, res) {
-                if (err) {
-                    cb(err, null);
-                    return;
-                }
+        conn.query("BEGIN", function(err, data) {
+            if (err)    {
+                cb(err, null);
+                return;
+            }
+            if (gameId) {
+                conn.query("SELECT gameId from " + GLOBAL.GAME_TABLE + " WHERE gameId = ? FOR UPDATE", [ gameId ], function(err, res) {
+                    if (err) {
+                        cb(err, null);
+                        return;
+                    }
+                    cb(null, conn);
+                });
+            } else {
                 cb(null, conn);
-            });
-        }
-        else    {
-            cb(null, conn);
-        }
+            }
+        });
     });
 };
 

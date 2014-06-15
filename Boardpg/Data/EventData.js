@@ -1,38 +1,50 @@
 require('./State.js');
 var eventData = {
-	"noEvent" : {
-		"socketParams" : [
+    "noEvent" : {
+        "socketParams" : [
 
-		],
+        ],
 
-		"requiresActive" : true,
-		"validStates" : [ GLOBAL.state.NO_STATE ],
+        "requiresActive" : true,
+        "validStates" : [ GLOBAL.state.NO_STATE ],
 
-		"stateChecker" : "",
-		"handler" : ""
-	},
+        "stateChecker" : "",
+        "handler" : ""
+    },
+    
+    "continueDead" :    {
+        "socketParams" : [],
 
-	"createGame" : {
-		"socketParams" : [],
+        "requiresActive" : true,
+        "validStates" : [
+             GLOBAL.state.DEAD
+        ],
 
-		"requiresActive" : false,
-		"validStates" : [
+        "stateChecker" : "nullValidator",
+        "handler" : "continueDead"
+    },
 
-		],
+    "createGame" : {
+        "socketParams" : [],
 
-		"stateChecker" : "canCreateGame",
-		"handler" : "createGame"
-	},
+        "requiresActive" : false,
+        "validStates" : [
 
-	"rollDice" : {
-		"socketParams" : [
+        ],
 
-		],
+        "stateChecker" : "canCreateGame",
+        "handler" : "createGame"
+    },
 
-		"requiresActive" : true,
-		"validStates" : [ GLOBAL.state.BOARD ],
+    "rollDice" : {
+        "socketParams" : [],
 
-		"stateChecker" : "genericValidator",
-		"handler" : "rollDice"
-	}
+        "requiresActive" : true,
+        "validStates" : [ GLOBAL.state.BOARD ],
+
+        "stateChecker" : "nullValidator",
+        "handler" : "rollDice"
+    }
 };
+
+module.exports = eventData;

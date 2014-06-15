@@ -1,3 +1,4 @@
-/**
- * New node file
- */
+function EncounterList() {
+}
+
+module.exports = EncounterList;

@@ -1,3 +1,4 @@
-/**
- * New node file
- */
+function Skills() {
+}
+
+module.exports = Skills;

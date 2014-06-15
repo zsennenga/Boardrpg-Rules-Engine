@@ -1,3 +1,4 @@
-/**
- * New node file
- */
+function Cities() {
+}
+
+module.exports = Cities;

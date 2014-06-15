@@ -12,14 +12,14 @@ function execute(db, gameId, cb) {
             return;
         }
         var resp = {};
-        conn.query("SELECT * FROM " + GLOBAL.GAME_TABLE + " WHERE gameId = ?", [ gameId ], function(error, gameData) {
-            if (error) {
-                cb(error, null);
+        conn.query("SELECT * FROM " + GLOBAL.GAME_TABLE + " WHERE gameId = ?", [ gameId ], function(error1, gameData) {
+            if (error1) {
+                cb(error1, null);
                 return;
             }
-            conn.query("SELECT * FROM " + GLOBAL.PLAYERGAME_TABLE + " WHERE gameId = ?", [ gameId ], function(error, playerData) {
-                if (error) {
-                    cb(error, null);
+            conn.query("SELECT * FROM " + GLOBAL.PLAYERGAME_TABLE + " WHERE gameId = ?", [ gameId ], function(error2, playerData) {
+                if (error2) {
+                    cb(error2, null);
                     return;
                 }
                 resp.gameData = gameData;

@@ -1,3 +1,4 @@
-/**
- * New node file
- */
+function FieldMagic() {
+}
+
+module.exports = FieldMagic;
