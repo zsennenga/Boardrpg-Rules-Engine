@@ -7,7 +7,7 @@
  * @param cb
  * @param conn
  */
-function execute(sParams, gameId, playerId, cb, conn) {
+function execute(sParams, gameData, gameId, playerId, cb, conn) {
     /**
      * Not sure exactly what needs to get checked here. Maybe check if the player is already in a
      * game? Maybe check if the player is allowed to make games? Idk.

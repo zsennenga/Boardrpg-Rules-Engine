@@ -9,8 +9,8 @@ function execute(params, data) {
     if (params.length === 0) {
         return true;
     }
-    for ( var param in params) {
-        if (!(param in data)) {
+    for (var i = 0; i < params.length; i++) {
+        if (!(params[i] in data)) {
             return false;
         }
     }

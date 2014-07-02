@@ -15,12 +15,11 @@ console.log('Connecting to database');
 var storage = new (require('./IO/DBWrapper'))(db);
 
 console.log('Loading gameData');
-var gameData = require('./Game/GameData');
+var gameData = new (require('./Game/GameData'))();
 
-console.log('Loading Stat, Event and PlayerAction Handlers');
+console.log('Loading StateValidators and EventHandlers');
 var stateValidators = new (require('./Game/StateValidators'))();
 var eventHandlers = new (require('./Game/EventHandlers'))();
-var playerActionHandlers = new (require('./Game/PlayerActionHandlers'))();
 
 console.log('Loading the rest');
 var playerData = new (require('./Game/PlayerData'))();
@@ -170,20 +169,20 @@ io.sockets.on('connection', function(socket) {
             // of tasks
             var conn = res[0];
             async.series([ function(callback) {
-                //Check the basics:
-                //1. If the event requires you to be active are you
-                //2. Are you in one of the states that the event requires?
+                // Check the basics:
+                // 1. If the event requires you to be active are you
+                // 2. Are you in one of the states that the event requires?
                 stateValidators.checkActiveAndState(socket.gameId, socket.playerId, validStates, requiresActive, callback, conn);
             }, function(callback) {
                 // Use the specific state validator for the event
                 // Many state validators don't actually have one, but some require one
-                stateValidators[stateChecker](data, socket.gameId, socket.playerId, callback, conn);
+                stateValidators[stateChecker](data, gameData, socket.gameId, socket.playerId, callback, conn);
             }, function(callback) {
                 // Execute event Handler
-                eventHandlers[eventHandler](data, gameData, socket.gameId, socket.playerId, callback, conn);
+                eventHandlers[eventHandler](data, gameData, playerData, socket.gameId, socket.playerId, callback, conn);
             }, function(callback) {
                 // Handle end of Turn
-                eventHandlers.endTurn(data, gameData, playerActionHandlers, socket.gameId, socket.playerId, callback, conn);
+                eventHandlers.endTurn(data, gameData, playerData, socket.gameId, socket.playerId, callback, conn);
             } ], function(error, res) {
                 if (error) {
                     storage.rollbackAndClose(conn);

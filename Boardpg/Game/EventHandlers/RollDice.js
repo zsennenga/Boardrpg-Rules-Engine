@@ -1,4 +1,4 @@
-function execute(sParams, gameData, playerAction, gameId, playerId, cb, conn) {
+function execute(sParams, gameData, playerData, gameId, playerId, cb, conn) {
     var data = {};
     data.dieRoll = 0;
     conn.query("SELECT stateData FROM " + GLOBAL.GAME_TABLE + " WHERE gameId = ?", [ gameId ], function(err, data)    {

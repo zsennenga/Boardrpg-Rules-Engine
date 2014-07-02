@@ -8,5 +8,6 @@ StateValidators.prototype.canCreateGame =       (require('./StateValidators/CanC
 StateValidators.prototype.gameExists =          (require('./StateValidators/GameExists')).execute;
 StateValidators.prototype.playerInGame =        (require('./StateValidators/PlayerInGame')).execute;
 StateValidators.prototype.checkActiveAndState = (require('./StateValidators/CheckActiveAndState')).execute;
+StateValidators.prototype.checkMoveSequence =   (require('./StateValidators/CheckMoveSequence')).execute;
 
 module.exports = StateValidators;

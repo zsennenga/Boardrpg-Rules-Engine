@@ -1,1 +1,88 @@
-{}
+{
+	"A": 
+	{
+		"connectedNodes": 
+		[
+			"B",
+			"H"
+		],
+
+		"spaceHandler": "testHandler"
+	},
+
+	"B": 
+	{
+		"connectedNodes": 
+		[
+			"A",
+			"C"
+		],
+
+		"spaceHandler": "testHandler"
+	},
+
+	"C": 
+	{
+		"connectedNodes": 
+		[
+			"B",
+			"D"
+		],
+
+		"spaceHandler": "testHandler"
+	},
+
+	"D": 
+	{
+		"connectedNodes": 
+		[
+			"C",
+			"E"
+		],
+
+		"spaceHandler": "testHandler"
+	},
+
+	"E": 
+	{
+		"connectedNodes": 
+		[
+			"F",
+			"D"
+		],
+
+		"spaceHandler": "testHandler"
+	},
+
+	"F": 
+	{
+		"connectedNodes": 
+		[
+			"G",
+			"E"
+		],
+
+		"spaceHandler": "testHandler"
+	},
+
+	"G": 
+	{
+		"connectedNodes": 
+		[
+			"F",
+			"H"
+		],
+
+		"spaceHandler": "testHandler"
+	},
+
+	"H": 
+	{
+		"connectedNodes": 
+		[
+			"G"
+		],
+
+		"spaceHandler": "testHandler"
+	}
+}

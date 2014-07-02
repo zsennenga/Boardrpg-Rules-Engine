@@ -1,5 +1,5 @@
 function Board() {
-    this.board = {};
+    this.board = require('./StaticData/Board.json');
 }
 
 /**
@@ -10,9 +10,10 @@ function Path() {
     this.previousNodes = [];
     this.length = 0;
 }
-
 /**
- * Helper function that checks if a node that we're thinking about visiting is the one that we just came from.
+ * Helper function that checks if a node that we're thinking about visiting is the one that we just
+ * came from.
+ * 
  * @param node
  * @param previous
  * @returns {Boolean}
@@ -28,26 +29,27 @@ function checkWasLast(node, previous) {
  * @param nodeList
  * @returns {Boolean}
  */
-function validatePath(start, end, nodeList) {
+Board.prototype.validatePath = function(start, end, nodeList) {
     if (nodeList[0] !== start || nodeList[nodeList.length - 1] !== end) {
         return false;
     }
     for (var i = 1; i < nodeList.length - 1; i++) {
         var node = nodeList[i];
-        var prevNode = nodeList[i-1];
-        if (prevNode.connectedNodes.indexOf(node) === -1)  {
+        var prevNode = nodeList[i - 1];
+        if (this.board[prevNode].connectedNodes.indexOf(node) === -1) {
             return false;
         }
     }
     return true;
-}
+};
 /**
  * Get all the moves possible from a given spot.
+ * 
  * @param startId
  * @param distance
  * @param cb
  */
-function getAllMoves(startId, distance, cb) {
+Board.prototype.getAllMoves = function(startId, distance, cb) {
     // Check that the types are correct. Should not happen often but it prevents crashes etc.
     if (typeof this.board[startId] !== 'Object') {
         cb('INVALID_BOARD_POS', null);
@@ -108,6 +110,29 @@ function getAllMoves(startId, distance, cb) {
     }
 
     cb(null, returnPaths);
-}
+};
+/**
+ * Gets a space's data
+ * 
+ * @param spaceId
+ */
+Board.prototype.getSpace = function(spaceId)    {
+   var ret = this.board[spaceId];
+   
+   if (typeof ret !== 'object') {
+       return {};
+   }
+   
+   return ret;
+};
+
+Board.prototype.blankHandler = (require('./SpaceHandlers/Space_Blank')).execute;
+Board.prototype.castleHandler = (require('./SpaceHandlers/Space_Castle')).execute;
+Board.prototype.cityHandler = (require('./SpaceHandlers/Space_City')).execute;
+Board.prototype.darknessHandler = (require('./SpaceHandlers/Space_Darkness')).execute;
+Board.prototype.mapHandler = (require('./SpaceHandlers/Space_MapChange')).execute;
+Board.prototype.rouletteHandler = (require('./SpaceHandlers/Space_Roulette')).execute;
+Board.prototype.shopHandler = (require('./SpaceHandlers/Space_Shop')).execute;
+Board.prototype.testHandler = (require('./SpaceHandlers/Space_Test')).execute;
 
 module.exports = Board;

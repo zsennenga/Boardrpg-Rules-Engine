@@ -11,14 +11,12 @@ var eventData = {
         "stateChecker" : "",
         "handler" : ""
     },
-    
-    "continueDead" :    {
+
+    "continueDead" : {
         "socketParams" : [],
 
         "requiresActive" : true,
-        "validStates" : [
-             GLOBAL.state.DEAD
-        ],
+        "validStates" : [ GLOBAL.state.DEAD ],
 
         "stateChecker" : "nullValidator",
         "handler" : "continueDead"
@@ -44,6 +42,15 @@ var eventData = {
 
         "stateChecker" : "nullValidator",
         "handler" : "rollDice"
+    },
+
+    "move" : {
+        "socketParams" : [ 'end', 'path' ],
+        "requiresActive" : true,
+        "validStates" : [ GLOBAL.state.MOVING ],
+
+        "stateChecker" : "checkMoveSequence",
+        "handler" : "move"
     }
 };
 
